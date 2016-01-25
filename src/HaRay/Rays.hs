@@ -18,19 +18,63 @@
    SOFTWARE.
 -}
 
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module HaRay.Rays where
 
 import HaRay.Vectors
 import Data.Array.Accelerate as A
+import Data.Array.Accelerate.Smart
+import Data.Array.Accelerate.Tuple
+import Data.Array.Accelerate.Array.Sugar ( Elt(..), EltRepr, EltRepr' )
+import Data.Typeable
 
 
-type Ray = (Vec3, Vec3) -- ^ (origin, direction)
+type Ray = RayA Double
 
 
-rayOrigin :: Exp Ray -> Exp Vec3
-rayOrigin = A.fst
+data RayA a = Ray (Vec a) -- ^ Origin
+                  (Vec a) -- ^ Direction
+  deriving (Eq, Show, Typeable)
 
 
-rayDirection :: Exp Ray -> Exp Vec3
-rayDirection = A.snd
+type instance EltRepr (RayA a) = EltRepr (Vec a, Vec a)
+type instance EltRepr' (RayA a) = EltRepr' (Vec a, Vec a)
+
+
+instance Elt a => Elt (RayA a) where
+  eltType (_ :: RayA a) = eltType (undefined :: (Vec a, Vec a))
+  fromElt (Ray o d) = fromElt (o, d)
+  toElt packed = let (o, d) = toElt packed in Ray o d
+
+  eltType' (_ :: RayA a) = eltType' (undefined :: (Vec a, Vec a))
+  fromElt' (Ray o d) = fromElt' (o, d)
+  toElt' packed = let (o, d) = toElt' packed in Ray o d
+
+
+instance IsTuple (RayA a) where
+  type TupleRepr (RayA a) = TupleRepr (Vec a, Vec a)
+  fromTuple (Ray o d) = (((), o), d)
+  toTuple (((), o), d) = Ray o d
+
+
+instance (Lift Exp a, Elt (Plain a)) => Lift Exp (RayA a) where
+  type Plain (RayA a) = RayA (Plain a)
+  lift (Ray o d) = Exp . Tuple $ NilTup `SnocTup` lift o `SnocTup` lift d
+
+
+rayOri :: Exp Ray -> Exp Vec3
+rayOri ray = Exp $ SuccTupIdx ZeroTupIdx `Prj` ray
+
+
+rayDir :: Exp Ray -> Exp Vec3
+rayDir ray = Exp $ ZeroTupIdx `Prj` ray
+
+

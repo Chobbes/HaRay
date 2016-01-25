@@ -84,5 +84,5 @@ instance Trace Sphere where
       r = sphereRadius sphere
 
       -- Unpacking ray
-      o = rayOrigin ray
-      v = rayDirection ray
+      o = rayOri ray
+      v = rayDir ray
