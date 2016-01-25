@@ -37,30 +37,30 @@ import Data.Array.Accelerate.Array.Sugar ( Elt(..), EltRepr, EltRepr' )
 import Data.Typeable
 
 
-type Ray = RayA Double
+type Ray = RayA Vec3
 
 
-data RayA a = Ray (Vec a) -- ^ Origin
-                  (Vec a) -- ^ Direction
+data RayA a = Ray a -- ^ Origin
+                  a -- ^ Direction
   deriving (Eq, Show, Typeable)
 
 
-type instance EltRepr (RayA a) = EltRepr (Vec a, Vec a)
-type instance EltRepr' (RayA a) = EltRepr' (Vec a, Vec a)
+type instance EltRepr (RayA a) = EltRepr (a, a)
+type instance EltRepr' (RayA a) = EltRepr' (a, a)
 
 
 instance Elt a => Elt (RayA a) where
-  eltType (_ :: RayA a) = eltType (undefined :: (Vec a, Vec a))
+  eltType (_ :: RayA a) = eltType (undefined :: (a, a))
   fromElt (Ray o d) = fromElt (o, d)
   toElt packed = let (o, d) = toElt packed in Ray o d
 
-  eltType' (_ :: RayA a) = eltType' (undefined :: (Vec a, Vec a))
+  eltType' (_ :: RayA a) = eltType' (undefined :: (a, a))
   fromElt' (Ray o d) = fromElt' (o, d)
   toElt' packed = let (o, d) = toElt' packed in Ray o d
 
 
 instance IsTuple (RayA a) where
-  type TupleRepr (RayA a) = TupleRepr (Vec a, Vec a)
+  type TupleRepr (RayA a) = TupleRepr (a, a)
   fromTuple (Ray o d) = (((), o), d)
   toTuple (((), o), d) = Ray o d
 

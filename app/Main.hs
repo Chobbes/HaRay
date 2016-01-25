@@ -46,10 +46,16 @@ pixelRays :: Int -> Int -> Exp Vec3 -> Acc (Array DIM2 Ray)
 pixelRays width height ori = generate (constant (Z :. width :. height)) indexToRay
   where
     indexToRay :: Exp DIM2 -> Exp Ray
-    indexToRay ix = lift $ Ray (0,0,0) (0,0,0)
-
-    {-
+    indexToRay ix = makeRay ori dir
       where (Z :. y :. x) = unlift ix
-            x' = A.fromIntegral x
-            y' = A.fromIntegral y
--}
+            a = A.fromIntegral x
+            b = A.fromIntegral y
+            dir = makeVec a b 1
+
+
+makeVec :: Exp Double -> Exp Double -> Exp Double -> Exp (Double, Double, Double)
+makeVec x y z = lift (x, y, z)
+
+
+makeRay :: Exp (Double, Double, Double) -> Exp (Double, Double, Double) -> Exp Ray
+makeRay o d = lift (Ray o d)
