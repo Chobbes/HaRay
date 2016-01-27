@@ -8,7 +8,22 @@ packages:
 - '.'
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps:
+- gloss-1.9.4.1
+- gloss-accelerate-1.9.0.0
+- gloss-rendering-1.9.3.1
+- GLUT-2.7.0.6
+- OpenGL-2.12.0.1
+- GLURaw-1.5.0.3
+- ObjectName-1.1.0.1
+- OpenGLRaw-2.5.5.0
+- accelerate-cuda-0.15.1.1
+- cuda-0.7.0.0
+- exception-mtl-0.4
+- language-c-quote-0.11.4
+- mainland-pretty-0.4.1.2
+- symbol-0.2.4
+
 
 # Override default flag values for local packages and extra-deps
 flags: {}

@@ -35,15 +35,29 @@ import HaRay.Vectors
 import HaRay.Rays
 import Data.Array.Accelerate as A
 import Data.Array.Accelerate.Interpreter
+import Graphics.Gloss
+import Graphics.Gloss.Data.Color
+import qualified  Graphics.Gloss.Accelerate.Data.Color.RGBA as AC
+import Graphics.Gloss.Accelerate.Data.Picture
 
 
 main :: IO ()
-main = print . run $ A.map (flip trace sphere) (pixelRays 800 400 (constant (0,0,0)))
+main = display (InWindow "HaRay" (width, height) (0,0))
+               red
+               (bitmapOfArray (run . colourScene $ renderScene width height ori sphere) True)
   where sphere = constant $ Sphere (0,0,10) 9
+        width = 800
+        height = 400
+        ori = constant (0,0,0)
 
+colourScene :: Acc (Array DIM2 Double) -> Acc (Array DIM2 Word32)
+colourScene = A.map (\x -> x >* 0 ? (AC.packRGBA AC.blue, AC.packRGBA AC.black))
+
+renderScene :: Int -> Int -> Exp Vec3 -> Exp Sphere -> Acc (Array DIM2 Double)
+renderScene width height ori sphere = A.map (flip trace sphere) (pixelRays width height ori)
 
 pixelRays :: Int -> Int -> Exp Vec3 -> Acc (Array DIM2 Ray)
-pixelRays width height ori = generate (constant (Z :. width :. height)) indexToRay
+pixelRays width height ori = generate (constant (Z :. height :. width)) indexToRay
   where
     midX = A.fromIntegral (constant width) / 2
     midY = A.fromIntegral (constant height) / 2
@@ -52,7 +66,7 @@ pixelRays width height ori = generate (constant (Z :. width :. height)) indexToR
       where (Z :. y :. x) = unlift ix
             a = A.fromIntegral x - midX
             b = A.fromIntegral y - midY
-            dir = normalize $ makeVec a b 1
+            dir = normalize $ makeVec a b 20
 
 
 makeVec :: Exp Double -> Exp Double -> Exp Double -> Exp (Double, Double, Double)
