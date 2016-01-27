@@ -39,18 +39,20 @@ import Data.Array.Accelerate.Interpreter
 
 main :: IO ()
 main = print . run $ A.map (flip trace sphere) (pixelRays 800 400 (constant (0,0,0)))
-  where sphere = constant $ Sphere (0,0,10) 1
+  where sphere = constant $ Sphere (0,0,10) 9
 
 
 pixelRays :: Int -> Int -> Exp Vec3 -> Acc (Array DIM2 Ray)
 pixelRays width height ori = generate (constant (Z :. width :. height)) indexToRay
   where
+    midX = A.fromIntegral (constant width) / 2
+    midY = A.fromIntegral (constant height) / 2
     indexToRay :: Exp DIM2 -> Exp Ray
     indexToRay ix = makeRay ori dir
       where (Z :. y :. x) = unlift ix
-            a = A.fromIntegral x
-            b = A.fromIntegral y
-            dir = makeVec a b 1
+            a = A.fromIntegral x - midX
+            b = A.fromIntegral y - midY
+            dir = normalize $ makeVec a b 1
 
 
 makeVec :: Exp Double -> Exp Double -> Exp Double -> Exp (Double, Double, Double)
